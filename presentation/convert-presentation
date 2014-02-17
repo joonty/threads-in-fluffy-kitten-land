@@ -15,6 +15,9 @@ def replace_code_in_html(file)
 
   File.open(file, 'w') { |f| f.write(html.to_html) }
   puts "Replaced code snippets in #{file}"
+rescue => e
+  puts "Failed to replace code snippets:"
+  p e
 end
 
 notifier = INotify::Notifier.new

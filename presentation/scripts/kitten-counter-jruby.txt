@@ -1,0 +1,6 @@
+$ jruby kitten-counter.rb 1000
+Counted 839 kittens
+$ jruby kitten-counter.rb 20000
+Counted 10303 kittens
+$ jruby kitten-counter.rb 300000
+Counted 150608 kittens

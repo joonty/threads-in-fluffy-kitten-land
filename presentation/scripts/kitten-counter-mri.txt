@@ -1,0 +1,6 @@
+$ ruby kitten-counter.rb 1000
+Counted 1000 kittens
+$ ruby kitten-counter.rb 20000
+Counted 20000 kittens
+$ ruby kitten-counter.rb 300000
+Counted 300000 kittens

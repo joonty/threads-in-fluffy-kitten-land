@@ -22,7 +22,7 @@
 <body>
     <script src="../reveal/lib/js/head.min.js"></script><script src="../reveal/js/reveal.min.js"></script><div class="reveal">
       <div class="slides">
-        <section><h1 style="text-transform: uppercase;">The adventures of threads</h1>
+        <section><h1 style="text-transform: lowercase;">The adventures of threads</h1>
           <h2>In fluffy kitten land</h2>
           <p>
             <small>
@@ -31,7 +31,224 @@
               <a href="http://twitter.com/joonty">@joonty</a>
             </small>
           </p>
-        </section>
+        </section><section><section><h2>This is about writing multithreaded applications in ruby</h2>
+          </section><section><h2>But first, a story</h2>
+            <div class="fragment">
+              <img src="images/four-kittens.jpg"><p class="credit">
+                Image from
+                <a src="http://www.wallpapersat.com/wallpaper/four-fluffy-kitten.html">http://www.wallpapersat.com/wallpaper/four-fluffy-kitten.html</a>
+              </p>
+            </div>
+          </section><section><h2>The great fluffy kitten census</h2>
+            <ul>
+<li class="fragment">Every kitten should be counted</li>
+              <li class="fragment">The total number of kittens should be produced at the end, along with the totals grouped by colour</li>
+              <li class="fragment">Data for each kitten needs to be stored on the kitten database, which has a web API</li>
+              <li class="fragment">Fred the thread can use any number of his cousins, to speed things up</li>
+            </ul></section></section><section><h2>a definition</h2>
+          <p class="quote">
+            <span class="marks">"</span>
+            a thread of execution is the smallest sequence of programmed instructions that can be managed independently by an operating system scheduler
+            <span class="marks">"</span>
+          </p>
+        </section><section><h2>multithreading and ruby</h2>
+          <ol>
+<li class="fragment">MRI doesn't let the operating system schedule the threads, it manages that itself</li>
+            <li class="fragment">
+              The most popular interpreter,
+              <b>MRI,</b>
+              has a global interpreter lock =&gt; only one thread can execute ruby code at any time
+            </li>
+            <li class="fragment">Other interpreters provide true multithreading, e.g. jRuby and Rubinius</li>
+          </ol></section><section><h2>multithreading in MRI</h2>
+          <p>
+            Even though only one thread can execute
+            <span class="standout">ruby</span>
+            at any time, IO operations don't count as being within the interpreter
+          </p>
+          <i class="fragment standout">Apps with considerable IO use can see speed improvement by multithreading</i>
+        </section><section><h2>A fluffy kitten</h2>
+          <img src="images/fluffy-kitten-1.jpg"><p class="credit">
+            Image from
+            <a src="http://imgarcade.com/1/fluffy-kittens/">http://imgarcade.com/1/fluffy-kittens/</a>
+          </p>
+        </section><section><h2>let's talk about Fred</h2>
+          <pre><code class="ruby">
+fred = Thread.new { sleep 5 }
+
+fred.status # =&gt; "run"
+fred.stop? # =&gt; false
+fred.alive? # =&gt; true
+fred.status # =&gt; "sleep"
+fred.backtrace # =&gt; ["-:1:in `sleep'", "-:1:in `block in &lt;main&gt;'"]
+
+fred.join
+
+</code></pre>
+          <p class="fragment">You can query a thread variable about it's current status</p>
+        </section><section><h2>Scheduling threads</h2>
+          <pre><code class="ruby">
+x = 5
+
+fred = Thread.new do
+  Thread.stop
+  x ** 5
+end
+
+sleep 1
+
+fred.stop? # =&gt; true
+fred.wakeup
+
+fred.value # =&gt; 3125
+
+</code></pre>
+          <ol>
+<li class="fragment">Threads can access variables from the scope in which they are defined</li>
+            <li class="fragment">Thread.stop will cause a thread to sleep</li>
+            <li class="fragment">Thread#wakeup or Thread#run will start the thread back up again</li>
+            <li class="fragment">The "return" value of a thread can be accessed with Thread#value</li>
+          </ol></section><section><h2>Doing calculatey stuff</h2>
+          <pre><code class="ruby">
+require 'benchmark'
+num_threads = ARGV.shift.to_i
+
+def fib(n)
+  if n &lt; 3
+    1
+  else
+    fib(n-1) + fib(n-2)
+  end
+end
+
+1.upto(num_threads).map { |i|
+  Thread.new { puts fib(34) }
+}.each(&amp;:join)
+
+</code></pre>
+          <table class="fragment">
+<thead><tr>
+<th>No. threads</th>
+                <th>MRI 2.0.0</th>
+                <th>jRuby 1.7.0</th>
+              </tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+                <td>~ 0.60s</td>
+                <td>~ 0.61s</td>
+              </tr>
+<tr>
+<td>4</td>
+                <td>~ 2.47s</td>
+                <td>~ 0.74s</td>
+              </tr>
+</tbody>
+</table></section><section><h2>Another fluffy kitten</h2>
+          <img src="images/fluffy-kitten-2.png"><p class="credit">
+            Image from
+            <a src="http://imgarcade.com/1/fluffy-kittens/">http://imgarcade.com/1/fluffy-kittens/</a>
+          </p>
+        </section><section><h2>Doing IO stuff</h2>
+          <pre><code class="ruby">
+require 'net/http'
+
+num_threads = ARGV.shift.to_i
+
+all_urls = %w(www.ruby-lang.org
+              stackoverflow.com
+              ggapps.co.uk
+              joncairns.com)
+
+url_buckets = all_urls.each_slice(all_urls.length / num_threads).to_a
+
+url_buckets.map { |urls|
+  Thread.new(urls) do |urls|
+    urls.each do |url|
+      Net::HTTP.get(url, "/")
+    end
+  end
+}.each(&amp;:join)
+
+</code></pre>
+          <table class="fragment">
+<thead><tr>
+<th>No. threads</th>
+                <th>MRI 2.0.0</th>
+                <th>jRuby 1.7.0</th>
+              </tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+                <td>~ 4.27s</td>
+                <td>~ 5.76s</td>
+              </tr>
+<tr>
+<td>4</td>
+                <td>~ 2.40s</td>
+                <td>~ 2.95s</td>
+              </tr>
+</tbody>
+</table></section><section><section><h2>A simple kitten counter</h2>
+            <p>We want to test counting some kittens across multiple threads. Let's try a simple example.</p>
+            <pre><code class="ruby">
+class KittenCounter
+  attr_reader :total
+
+  def initialize
+    @total = 0
+  end
+
+  def incr
+    @total += 1
+  end
+end
+
+</code></pre>
+          </section><section><h4>A simple kitten counter</h4>
+            <pre><code class="ruby">
+require 'kitten-counter'
+total_kittens = ARGV.shift.to_i
+
+kittens = Array.new(total_kittens)
+counter = KittenCounter.new
+
+1.upto(4).map {
+  Thread.new {
+    until kittens.empty?
+      kittens.pop
+      counter.incr
+    end
+  }
+}.each(&amp;:join)
+
+puts "Counted #{counter.total} kittens"
+
+</code></pre>
+          </section><section><h4>A simple kitten counter</h4>
+            <p>This works nicely in MRI:</p>
+            <pre><code class="bash">
+$ ruby kitten-counter.rb 1000
+Counted 1000 kittens
+$ ruby kitten-counter.rb 20000
+Counted 20000 kittens
+$ ruby kitten-counter.rb 300000
+Counted 300000 kittens
+
+</code></pre>
+            <div class="fragment">
+              <p>But it all goes a bit weird in jruby:</p>
+              <pre><code class="bash">
+$ jruby kitten-counter.rb 1000
+Counted 839 kittens
+$ jruby kitten-counter.rb 20000
+Counted 10303 kittens
+$ jruby kitten-counter.rb 300000
+Counted 150608 kittens
+
+</code></pre>
+            </div>
+          </section></section>
 </div>
     </div>
     <script>

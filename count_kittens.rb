@@ -21,7 +21,7 @@ class KittenCounter
 end
 
 counter = KittenCounter.new
-counter_threads = 1
+counter_threads = 4
 kittens_in = Queue.new
 
 puts Benchmark.measure {

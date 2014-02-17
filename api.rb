@@ -5,6 +5,6 @@ get '/' do
 end
 
 post '/register_kitten' do
-  sleep(rand((0.1)..(0.5)))
+  sleep(rand((0.05)..(0.3)))
   "Registered kitten"
 end

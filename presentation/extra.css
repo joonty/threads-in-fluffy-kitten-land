@@ -19,7 +19,7 @@ pre code {
   padding: 0 2% !important;
 }
 
-ul li {
+ul li, ol li {
   margin: 1em 0 !important;
 }
 .left {
@@ -37,6 +37,18 @@ div.border-left {
 p {
   margin: 1em auto !important;
 }
+.reveal .credit {
+    font-size: 0.7em;
+    color: #6E6E6E;
+}
+.reveal .quote .marks {
+    font-family: Impact;
+}
+.reveal .quote {
+    margin: 1em !important;
+    font-style: italic;
+    color: #eee;
+}
 
 .awesome {
   font-size: 1.5em !important;
@@ -44,4 +56,20 @@ p {
 }
 .standout {
   color: pink;
+}
+
+.reveal table {
+    margin: 1em auto !important;
+ }
+.reveal table thead th {
+    padding: 0.5em;
+    border: 2px solid white;
+    border-width: 0 0 2px 2px;
+}
+.reveal table thead th:first-child {
+    border-width: 0 0 2px 0;
+}
+
+.reveal .slides h1, .reveal .slides h2, .reveal .slides h3, .reveal .slides h4, .reveal .slides h5, .reveal .slides h6 {
+    text-transform: lowercase;
 }
