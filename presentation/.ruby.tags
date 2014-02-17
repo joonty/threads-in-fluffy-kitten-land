@@ -1,0 +1,12 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+MoviesController	/home/jon/presentations/rails-4/scripts/strong-params-1.rb	/^class MoviesController < ApplicationController$/;"	c
+create	/home/jon/presentations/rails-4/scripts/strong-params-1.rb	/^  def create$/;"	f	class:MoviesController
+fib	/home/jon/presentations/threads-and-processes/scripts/threads-4-not-threaded.rb	/^def fib(n)$/;"	f
+fib	/home/jon/presentations/threads-and-processes/scripts/threads-4.rb	/^def fib(n)$/;"	f
+movie_params	/home/jon/presentations/rails-4/scripts/strong-params-1.rb	/^  def movie_params$/;"	f	class:MoviesController
+replace_code_in_html	/home/jon/presentations/threads-and-processes/convert-presentation	/^def replace_code_in_html(file)$/;"	f

@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+require 'nokogiri'
+require 'rb-inotify'
+
+input = "."
+puts "Watching directory for changes...\n\n"
+
+def replace_code_in_html(file)
+  html = Nokogiri::HTML(File.read(file))
+  html.xpath("//code[@include]").each do |a|
+    script = a.attr('include')
+    a.content = "\n" + File.read(script) + "\n"
+    a.remove_attribute('include')
+  end
+
+  File.open(file, 'w') { |f| f.write(html.to_html) }
+  puts "Replaced code snippets in #{file}"
+end
+
+notifier = INotify::Notifier.new
+notifier.watch(input, :create) do |e, f|
+  file = e.name
+  if File.extname(file) == '.haml'
+    output = File.basename(file, '.haml') + '.html'
+    puts "#{file} has been modified, writing html to #{output}"
+    system "haml #{file} #{output}"
+
+    if $?.to_i == 0
+      replace_code_in_html(output)
+      puts "Completed!\n\n"
+    else
+      puts "ERROR!\n\n"
+    end
+  end
+
+end
+
+notifier.run

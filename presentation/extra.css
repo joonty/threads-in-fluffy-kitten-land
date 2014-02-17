@@ -1,0 +1,47 @@
+.tiny {
+  font-size: 6px !important;
+}
+.tiny > * {
+  font-size: 6px !important;
+}
+.tiny-lh {
+  line-height: 9px !important;
+}
+.reveal pre {
+  box-shadow: none !important;
+}
+pre code {
+  background: #1A1A1A !important;
+}
+.half {
+  width: 40%;
+  margin: 0 1% !important;
+  padding: 0 2% !important;
+}
+
+ul li {
+  margin: 1em 0 !important;
+}
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+div.border-left {
+  border-left: 3px solid white !important;
+}
+
+p {
+  margin: 1em auto !important;
+}
+
+.awesome {
+  font-size: 1.5em !important;
+  font-weight: bold !important;
+}
+.standout {
+  color: pink;
+}

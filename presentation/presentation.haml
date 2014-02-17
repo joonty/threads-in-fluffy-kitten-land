@@ -1,0 +1,56 @@
+<!doctype html>
+%html{lang: "en"}
+  %head
+    %meta{charset: "utf-8"}/
+    %title The adventures of threads in fluffy kitten land
+    %meta{content: "The adventures of threads in fluffy kitten land", name: "description"}/
+    %meta{content: "Jon Cairns", name: "author"}/
+    %meta{content: "yes", name: "apple-mobile-web-app-capable"}/
+    %meta{content: "black-translucent", name: "apple-mobile-web-app-status-bar-style"}/
+    %meta{content: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no", name: "viewport"}/
+    %link{href: "extra.css", rel: "stylesheet"}/
+    %link{href: "../reveal/css/reveal.min.css", rel: "stylesheet"}/
+    %link#theme{href: "../reveal/css/theme/night.css", rel: "stylesheet"}/
+    / For syntax highlighting
+    %link{href: "../reveal/lib/css/zenburn.css", rel: "stylesheet"}/
+    / If the query includes 'print-pdf', use the PDF print sheet
+    :javascript
+      document.write( '<link rel="stylesheet" href="../reveal/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    /[if lt IE 9]
+      <script src="../reveal/lib/js/html5shiv.js"></script>
+  %body
+    %script{src: "../../reveal/lib/js/head.min.js"}
+    %script{src: "../../reveal/js/reveal.min.js"}
+
+    .reveal
+      .slides
+        %section
+          %h1{style: "text-transform: uppercase;"} The adventures of threads
+          %h2 In fluffy kitten land
+          %p
+            %small
+              %a{href: "http://joncairns.com"} Jon Cairns
+              \/
+              %a{href: "http://twitter.com/joonty"} @joonty
+
+    :javascript
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+          controls: true,
+          progress: true,
+          history: true,
+          center: true,
+          theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+          transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+          // Optional libraries used to extend on reveal.js
+          dependencies: [
+              { src: '../reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+              { src: '../reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: '../reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: '../reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+              { src: '../reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+              { src: '../reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+          ]
+      });

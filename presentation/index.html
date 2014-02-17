@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<title>Testing tools</title>
+<meta name="description" content="Tools for writing tests with ruby on rails">
+<meta name="author" content="Testing tools">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="extra.css">
+<link rel="stylesheet" href="../reveal/css/reveal.min.css">
+<link rel="stylesheet" href="../reveal/css/theme/night.css" id="theme">
+<!-- For syntax highlighting --><link rel="stylesheet" href="../reveal/lib/css/zenburn.css">
+<!-- If the query includes 'print-pdf', use the PDF print sheet --><script>
+            document.write( '<link rel="stylesheet" href="../reveal/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+        </script><!--[if lt IE 9]>
+        <script src="../reveal/lib/js/html5shiv.js"></script>
+        <![endif]-->
+</head>
+<body>
+
+        <div class="reveal">
+
+            <div class="slides">
+                <section><h1 style="text-transform: uppercase;">How to do testing</h1>
+                    <h3>When testing is really, really hard</h3>
+                    <h4>Part 1</h4>
+                    <p>
+                        <small><a href="http://joncairns.com">Jon Cairns</a> / <a href="http://twitter.com/joonty">@joonty</a></small>
+                    </p>
+                </section><section><h2></h2>
+                    <pre>
+                        <code data-trim class="ruby">
+class User &lt; ActiveRecord::Base
+  attr_accessible :name
+end
+
+class UserTest &lt; ActiveRecord::TestCase
+  def test_user_has_a_name
+    user = User.new(name: "Timmy")
+
+    assert_equal "Timmy", user.name
+  end
+end
+
+</code>
+                    </pre>
+
+                </section>
+</div>
+
+        </div>
+
+        <script src="../reveal/lib/js/head.min.js"></script><script src="../reveal/js/reveal.min.js"></script><script>
+
+            // Full list of configuration options available here:
+                // https://github.com/hakimel/reveal.js#configuration
+                Reveal.initialize({
+                    controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+            { src: '../reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+        { src: '../reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: '../reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: '../reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+        { src: '../reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+        { src: '../reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+                });
+
+        </script>
+</body>
+</html>
