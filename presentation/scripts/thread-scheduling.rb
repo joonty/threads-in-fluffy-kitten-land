@@ -8,6 +8,7 @@ end
 sleep 1
 
 fred.stop? # => true
+
 fred.wakeup
 
 fred.value # => 3125

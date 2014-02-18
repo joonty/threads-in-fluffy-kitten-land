@@ -1,0 +1,2 @@
+$ jruby kitten-counter.rb 300000
+Counted 303900 kittens

@@ -153,7 +153,7 @@
         %section
           %section
             %h2 A simple kitten counter
-            %p We want to test counting some kittens across multiple threads. Let's try a simple example.
+            %p We want to test counting some kittens across multiple threads. Let's create a simple counter class.
             %pre
               %code.ruby{"include" => "scripts/kitten-counter.rb"}
 
@@ -164,7 +164,7 @@
 
           %section
             %h4 A simple kitten counter
-            %p This works nicely in MRI:
+            %p This seems to work nicely in MRI:
             %pre
               %code.bash{"include" => "scripts/kitten-counter-mri.txt"}
             %div.fragment
@@ -173,7 +173,86 @@
                 %code.bash{"include" => "scripts/kitten-counter-jruby.txt"}
 
 
+        %section
+          %h2 Thread safety
+          %img{src: "images/hater-kitten.jpg"}
+          %p.credit
+            Image from
+            %a{src: "http://imgarcade.com/1/fluffy-kittens/"} http://imgarcade.com/1/fluffy-kittens/
 
+        %section
+          %h2 Identifying unsafe operations
+          %p.fragment
+            Anything where you
+            %b modify
+            global state without locking
+          %p.fragment
+            So this must be happening in our simple counter
+
+        %section
+          %h2 A quick recap
+          %pre
+            %code.ruby{"include" => "scripts/kitten-counter-implementation.rb"}
+
+        %section
+          %section
+            %h2 Fixing unsafe thingy #1
+            %pre
+              %code.ruby{"include" => "scripts/kitten-counter-unsafe.rb"}
+
+          %section
+            %h4 Fixing unsafe thingy #1
+            %p A mutex can be used to lock a resource while one thread is reading or writing to it:
+            %pre.fragment
+              %code.ruby{"include" => "scripts/kitten-counter-safe.rb"}
+
+          %section
+            %h4 Fixing unsafe thingy #1
+            %p But we now sometimes count more kittens than we should:
+            %pre.fragment
+              %code.ruby{"include" => "scripts/kitten-counter-safe-jruby.txt"}
+
+        %section
+          %section
+            %h2 Fixing unsafe thingy #2
+            %pre
+              %code.ruby{"include" => "scripts/kitten-counter-array-unsafe.rb"}
+
+          %section
+            %h4 Fixing unsafe thingy #2
+            %p Ruby's Array class is (sometimes) not thread safe.
+            %p.fragment Let's use Queue instead.
+            %pre.fragment
+              %code.ruby{"include" => "scripts/kitten-counter-queue-safe.rb"}
+
+        %section
+          %h2 Queues
+          %p Queue can be a replacement for an Array, but there are significant differences:
+          %ol
+            %li.fragment Queue is thread safe
+            %li.fragment You cannot reference Queue items by index
+            %li.fragment Taking an item off a queue will block until an item is added elsewhere (unless you specify it to be non-blocking)
+            %li.fragment Queue includes the Enumerable module, but it doesn't include any of Array's methods
+            %li.fragment You can also used SizedQueue, if you want to specify the maximum number of items in the queue
+
+        %section
+          %h2 Oh look, a kitten
+          %img{src: "images/fluffy-kitten-3.jpg"}
+          %p.credit
+            Image from
+            %a{src: "http://imgarcade.com/1/fluffy-kittens/"} http://imgarcade.com/1/fluffy-kittens/
+
+        %section
+          %h2 Let's count some kittens
+          %p A quick recap of the spec:
+          %ul
+            %li.fragment Every kitten should be counted
+            %li.fragment The total number of kittens should be produced at the end, along with the totals grouped by colour
+            %li.fragment Data for each kitten needs to be stored on the kitten database, which has a web API
+            %li.fragment Fred the thread can use any number of his cousins, to speed things up
+
+        %section
+          
 
     :javascript
       // Full list of configuration options available here:

@@ -84,6 +84,9 @@ fred.backtrace # =&gt; ["-:1:in `sleep'", "-:1:in `block in &lt;main&gt;'"]
 
 fred.join
 
+fred.alive? # =&gt; false
+fred.stop? # =&gt; true
+
 </code></pre>
           <p class="fragment">You can query a thread variable about it's current status</p>
         </section><section><h2>Scheduling threads</h2>
@@ -98,6 +101,7 @@ end
 sleep 1
 
 fred.stop? # =&gt; true
+
 fred.wakeup
 
 fred.value # =&gt; 3125
@@ -190,7 +194,7 @@ url_buckets.map { |urls|
               </tr>
 </tbody>
 </table></section><section><section><h2>A simple kitten counter</h2>
-            <p>We want to test counting some kittens across multiple threads. Let's try a simple example.</p>
+            <p>We want to test counting some kittens across multiple threads. Let's create a simple counter class.</p>
             <pre><code class="ruby">
 class KittenCounter
   attr_reader :total
@@ -208,9 +212,10 @@ end
           </section><section><h4>A simple kitten counter</h4>
             <pre><code class="ruby">
 require 'kitten-counter'
+
 total_kittens = ARGV.shift.to_i
 
-kittens = Array.new(total_kittens)
+kittens = Array.new(total_kittens, :kitten)
 counter = KittenCounter.new
 
 1.upto(4).map {
@@ -226,7 +231,7 @@ puts "Counted #{counter.total} kittens"
 
 </code></pre>
           </section><section><h4>A simple kitten counter</h4>
-            <p>This works nicely in MRI:</p>
+            <p>This seems to work nicely in MRI:</p>
             <pre><code class="bash">
 $ ruby kitten-counter.rb 1000
 Counted 1000 kittens
@@ -248,7 +253,138 @@ Counted 150608 kittens
 
 </code></pre>
             </div>
-          </section></section>
+          </section></section><section><h2>Thread safety</h2>
+          <img src="images/hater-kitten.jpg"><p class="credit">
+            Image from
+            <a src="http://imgarcade.com/1/fluffy-kittens/">http://imgarcade.com/1/fluffy-kittens/</a>
+          </p>
+        </section><section><h2>Identifying unsafe operations</h2>
+          <p class="fragment">
+            Anything where you
+            <b>modify</b>
+            global state without locking
+          </p>
+          <p class="fragment">
+            So this must be happening in our simple counter
+          </p>
+        </section><section><h2>A quick recap</h2>
+          <pre><code class="ruby">
+require 'kitten-counter'
+
+total_kittens = ARGV.shift.to_i
+
+kittens = Array.new(total_kittens, :kitten)
+counter = KittenCounter.new
+
+1.upto(4).map {
+  Thread.new {
+    until kittens.empty?
+      kittens.pop
+      counter.incr
+    end
+  }
+}.each(&amp;:join)
+
+puts "Counted #{counter.total} kittens"
+
+</code></pre>
+        </section><section><section><h2>Fixing unsafe thingy #1</h2>
+            <pre><code class="ruby">
+class KittenCounter
+  attr_reader :total
+
+  def initialize
+    @total = 0
+  end
+
+  def incr
+    @total += 1 # HERE
+  end
+end
+
+</code></pre>
+          </section><section><h4>Fixing unsafe thingy #1</h4>
+            <p>A mutex can be used to lock a resource while one thread is reading or writing to it:</p>
+            <pre class="fragment"><code class="ruby">
+require 'thread'
+
+class KittenCounter
+  attr_reader :total
+
+  def initialize
+    @total = 0
+    @mutex = Mutex.new
+  end
+
+  def incr
+    @mutex.synchronize do
+      @total += 1
+    end
+  end
+end
+
+</code></pre>
+          </section><section><h4>Fixing unsafe thingy #1</h4>
+            <p>But we now sometimes count more kittens than we should:</p>
+            <pre class="fragment"><code class="ruby">
+$ jruby kitten-counter.rb 300000
+Counted 303900 kittens
+
+</code></pre>
+          </section></section><section><section><h2>Fixing unsafe thingy #2</h2>
+            <pre><code class="ruby">
+kittens = Array.new(total_kittens, :kitten)
+
+1.upto(4).map {
+  Thread.new {
+    #...
+    kittens.pop # HERE
+    # ...
+  }
+}
+
+</code></pre>
+          </section><section><h4>Fixing unsafe thingy #2</h4>
+            <p>Ruby's Array class is (sometimes) not thread safe.</p>
+            <p class="fragment">Let's use Queue instead.</p>
+            <pre class="fragment"><code class="ruby">
+require 'thread'
+
+kittens = Queue.new
+total_kittens.times do
+  kittens &lt;&lt; :kitten
+end
+
+1.upto(4).map {
+  Thread.new {
+    #...
+    kittens.pop # HERE
+    # ...
+  }
+}
+
+</code></pre>
+          </section></section><section><h2>Queues</h2>
+          <p>Queue can be a replacement for an Array, but there are significant differences:</p>
+          <ol>
+<li class="fragment">Queue is thread safe</li>
+            <li class="fragment">You cannot reference Queue items by index</li>
+            <li class="fragment">Taking an item off a queue will block until an item is added elsewhere (unless you specify it to be non-blocking)</li>
+            <li class="fragment">Queue includes the Enumerable module, but it doesn't include any of Array's methods</li>
+            <li class="fragment">You can also used SizedQueue, if you want to specify the maximum number of items in the queue</li>
+          </ol></section><section><h2>Oh look, a kitten</h2>
+          <img src="images/fluffy-kitten-3.jpg"><p class="credit">
+            Image from
+            <a src="http://imgarcade.com/1/fluffy-kittens/">http://imgarcade.com/1/fluffy-kittens/</a>
+          </p>
+        </section><section><h2>Let's count some kittens</h2>
+          <p>A quick recap of the spec:</p>
+          <ul>
+<li class="fragment">Every kitten should be counted</li>
+            <li class="fragment">The total number of kittens should be produced at the end, along with the totals grouped by colour</li>
+            <li class="fragment">Data for each kitten needs to be stored on the kitten database, which has a web API</li>
+            <li class="fragment">Fred the thread can use any number of his cousins, to speed things up</li>
+          </ul></section><section></section>
 </div>
     </div>
     <script>
