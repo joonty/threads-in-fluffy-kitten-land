@@ -1,7 +1,7 @@
 class KittenCounter
   attr_reader :totals, :mutex
 
-  def initialize
+  def initialize(print_freq = 10)
     @totals = Hash.new { |h, k| h[k] = 0 }
     @mutex = Mutex.new
   end
@@ -13,9 +13,6 @@ class KittenCounter
   def add(kitten)
     mutex.synchronize do
       @totals[kitten.colour] += 1
-    end
-    if total % 10 == 0
-      puts "Total kittens: #{total}"
     end
   end
 
@@ -38,5 +35,11 @@ protected
     totals.inject("") { |s, (colour, total)|
       s << "  - #{colour} => #{total}\n"
     }
+  end
+
+  def print_if_necessary
+    if print_freq > 0 && total % print_freq == 0
+      puts "Total kittens: #{total}"
+    end
   end
 end
