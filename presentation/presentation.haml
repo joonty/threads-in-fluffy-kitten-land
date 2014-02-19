@@ -44,39 +44,32 @@
               %p.credit
                 Image from
                 %a{src: "http://www.wallpapersat.com/wallpaper/four-fluffy-kitten.html"} http://www.wallpapersat.com/wallpaper/four-fluffy-kitten.html
+            %aside.notes There is a land far-far away, called Fluffy Kitten Land. It's populated, to a large extent, by fluffy kittens. One of it's non-kitten inhabitants is Fred, the thread, who is a public servant. One day, Fred is called into the court of the fluffy kitten king.
+
+          %section
+            %h2 the fluffy kitten king
+            %div.fragment
+              %img{src: "images/hamster-king.jpg"}
+              %p.credit
+                Image from
+                %a{src: "http://undercoverguineapigs.blogspot.co.uk/2010/12/puppy-guinea-pig-wins-christmas-mouse.html"} http://undercoverguineapigs.blogspot.co.uk/2010/12/puppy-guinea-pig-wins-christmas-mouse.html
+            %aside.notes By a perverse twist of fate, the fluffy kitten king is a hamster called Cyril. He came to Fred the thread with a problem: "Fluffy Kitten land is a happy place, but we have never done a population census. We have no idea how many kittens live here, so I'm giving you the task of counting all the kittens in the land." Fred knew that this was a big task, and that he couldn't possibly do it by himself - it would take too long. Fortunately, he had a number of cousins who could help when the time came.
 
           %section
             %h2 The great fluffy kitten census
             %ul
               %li.fragment Every kitten should be counted
               %li.fragment The total number of kittens should be produced at the end, along with the totals grouped by colour
-              %li.fragment Data for each kitten needs to be stored on the kitten database, which has a web API
+              %li.fragment Data for each kitten needs to be stored on the fluffy kitten database, which has a web API
               %li.fragment Fred the thread can use any number of his cousins, to speed things up
+            %aside.notes So that's the background and the spec for our program. To properly utilize Fred's cousins, we need to understand the concept of multithreading, and to understand the practical application in Ruby.
 
         %section
-          %h2 a definition
+          %h2 threads: a definition
           %p.quote
             %span.marks "
             a thread of execution is the smallest sequence of programmed instructions that can be managed independently by an operating system scheduler
             %span.marks "
-
-        %section
-          %h2 multithreading and ruby
-          %ol
-            %li.fragment MRI doesn't let the operating system schedule the threads, it manages that itself
-            %li.fragment
-              The most popular interpreter,
-              %b MRI,
-              has a global interpreter lock => only one thread can execute ruby code at any time
-            %li.fragment Other interpreters provide true multithreading, e.g. jRuby and Rubinius
-
-        %section
-          %h2 multithreading in MRI
-          %p
-            Even though only one thread can execute
-            %span.standout ruby
-            at any time, IO operations don't count as being within the interpreter
-          %i.fragment.standout Apps with considerable IO use can see speed improvement by multithreading
 
         %section
           %h2 A fluffy kitten
@@ -90,6 +83,12 @@
           %pre
             %code.ruby{"include" => "scripts/thread-methods.rb"}
           %p.fragment You can query a thread variable about it's current status
+          %aside.notes
+            Every program runs in at least one thread - the main thread.
+
+            Threads are defined with Thread.new, and everything inside the block is executed in this thread. When reading the code, imagine that block running at the same time as the proceeding code in the main thread.
+
+            `join` is used to wait for the thread to finish, so that the program can continue in the main thraed.
 
         %section
           %h2 Scheduling threads
@@ -100,6 +99,23 @@
             %li.fragment Thread.stop will cause a thread to sleep
             %li.fragment Thread#wakeup or Thread#run will start the thread back up again
             %li.fragment The "return" value of a thread can be accessed with Thread#value
+          %aside.notes
+            The sleep has been added in the main thread to give the new thread time to start up.
+
+        %section
+          %h2 ruby's multithreading idiosyncrasies
+          %ol
+            %li.fragment MRI, the most commonly used interpreter, doesn't let the operating system schedule the threads, it manages that itself
+            %li.fragment MRI has a global interpreter lock => only one thread can execute ruby code at any time
+            %li.fragment Other interpreters provide true multithreading, e.g. jRuby and Rubinius
+
+        %section
+          %h2 multithreading in MRI
+          %p
+            Even though only one thread can execute
+            %span.standout ruby
+            at any time, IO operations don't count as being within the interpreter
+          %i.fragment.standout Apps with considerable IO use can see speed improvement by multithreading
 
         %section
           %h2 Doing calculatey stuff
@@ -252,7 +268,30 @@
             %li.fragment Fred the thread can use any number of his cousins, to speed things up
 
         %section
-          
+          %h2 To conclude
+          %p{style: 'text-transform: uppercase'} Their weakness is their nose
+          %div.fragment
+            %img{src: "images/gif-1.gif"}
+            %p.credit
+              Source:
+              %a{src: "http://iheartcatgifs.tumblr.com/"} http://iheartcatgifs.tumblr.com/
+
+        %section
+          %h2 In summary
+          %p They like to drink alone
+          %div.fragment
+            %img{src: "images/gif-2.gif"}
+            %p.credit
+              Source:
+              %a{src: "http://iheartcatgifs.tumblr.com/"} http://iheartcatgifs.tumblr.com/
+
+        %section
+          %h2 And finally
+          %div.fragment
+            %img{src: "images/gif-3.gif"}
+            %p.credit
+              Source:
+              %a{src: "http://iheartcatgifs.tumblr.com/"} http://iheartcatgifs.tumblr.com/
 
     :javascript
       // Full list of configuration options available here:

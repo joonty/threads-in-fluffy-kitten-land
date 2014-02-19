@@ -3,79 +3,414 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<title>Testing tools</title>
-<meta name="description" content="Tools for writing tests with ruby on rails">
-<meta name="author" content="Testing tools">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="stylesheet" href="extra.css">
-<link rel="stylesheet" href="../reveal/css/reveal.min.css">
-<link rel="stylesheet" href="../reveal/css/theme/night.css" id="theme">
-<!-- For syntax highlighting --><link rel="stylesheet" href="../reveal/lib/css/zenburn.css">
+<title>The adventures of threads in fluffy kitten land</title>
+<meta content="The adventures of threads in fluffy kitten land" name="description">
+<meta content="Jon Cairns" name="author">
+<meta content="yes" name="apple-mobile-web-app-capable">
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<link href="extra.css" rel="stylesheet">
+<link href="../reveal/css/reveal.min.css" rel="stylesheet">
+<link href="../reveal/css/theme/night.css" id="theme" rel="stylesheet">
+<!-- For syntax highlighting --><link href="../reveal/lib/css/zenburn.css" rel="stylesheet">
 <!-- If the query includes 'print-pdf', use the PDF print sheet --><script>
-            document.write( '<link rel="stylesheet" href="../reveal/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
-        </script><!--[if lt IE 9]>
-        <script src="../reveal/lib/js/html5shiv.js"></script>
-        <![endif]-->
+      document.write( '<link rel="stylesheet" href="../reveal/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script><!--[if lt IE 9]>
+      <script src="../reveal/lib/js/html5shiv.js"></script>
+    <![endif]-->
 </head>
 <body>
+    <script src="../reveal/lib/js/head.min.js"></script><script src="../reveal/js/reveal.min.js"></script><div class="reveal">
+      <div class="slides">
+        <section><h1 style="text-transform: lowercase;">The adventures of threads</h1>
+          <h2>In fluffy kitten land</h2>
+          <p>
+            <small>
+              <a href="http://joncairns.com">Jon Cairns</a>
+              /
+              <a href="http://twitter.com/joonty">@joonty</a>
+            </small>
+          </p>
+        </section><section><section><h2>This is about writing multithreaded applications in ruby</h2>
+          </section><section><h2>But first, a story</h2>
+            <div class="fragment">
+              <img src="images/four-kittens.jpg"><p class="credit">
+                Image from
+                <a src="http://www.wallpapersat.com/wallpaper/four-fluffy-kitten.html">http://www.wallpapersat.com/wallpaper/four-fluffy-kitten.html</a>
+              </p>
+            </div>
+            <aside class="notes">Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).</aside></section><section><h2>Cyril, the hamster king</h2>
+            <div class="fragment">
+              <img src="images/hamster-king.jpg"><p class="credit">
+                Image from
+                <a src="http://undercoverguineapigs.blogspot.co.uk/2010/12/puppy-guinea-pig-wins-christmas-mouse.html">http://undercoverguineapigs.blogspot.co.uk/2010/12/puppy-guinea-pig-wins-christmas-mouse.html</a>
+              </p>
+            </div>
+          </section><section><h2>The great fluffy kitten census</h2>
+            <ul>
+<li class="fragment">Every kitten should be counted</li>
+              <li class="fragment">The total number of kittens should be produced at the end, along with the totals grouped by colour</li>
+              <li class="fragment">Data for each kitten needs to be stored on the fluffy kitten database, which has a web API</li>
+              <li class="fragment">Fred the thread can use any number of his cousins, to speed things up</li>
+            </ul></section></section><section><h2>threads: a definition</h2>
+          <p class="quote">
+            <span class="marks">"</span>
+            a thread of execution is the smallest sequence of programmed instructions that can be managed independently by an operating system scheduler
+            <span class="marks">"</span>
+          </p>
+        </section><section><h2>multithreading and ruby</h2>
+          <ol>
+<li class="fragment">MRI, the most commonly used interpreter, doesn't let the operating system schedule the threads, it manages that itself</li>
+            <li class="fragment">MRI has a global interpreter lock =&gt; only one thread can execute ruby code at any time</li>
+            <li class="fragment">Other interpreters provide true multithreading, e.g. jRuby and Rubinius</li>
+          </ol></section><section><h2>multithreading in MRI</h2>
+          <p>
+            Even though only one thread can execute
+            <span class="standout">ruby</span>
+            at any time, IO operations don't count as being within the interpreter
+          </p>
+          <i class="fragment standout">Apps with considerable IO use can see speed improvement by multithreading</i>
+        </section><section><h2>A fluffy kitten</h2>
+          <img src="images/fluffy-kitten-1.jpg"><p class="credit">
+            Image from
+            <a src="http://imgarcade.com/1/fluffy-kittens/">http://imgarcade.com/1/fluffy-kittens/</a>
+          </p>
+        </section><section><h2>let's talk about Fred</h2>
+          <pre><code class="ruby">
+fred = Thread.new { sleep 5 }
 
-        <div class="reveal">
+fred.status # =&gt; "run"
+fred.stop? # =&gt; false
+fred.alive? # =&gt; true
+fred.status # =&gt; "sleep"
+fred.backtrace # =&gt; ["-:1:in `sleep'", "-:1:in `block in &lt;main&gt;'"]
 
-            <div class="slides">
-                <section><h1 style="text-transform: uppercase;">How to do testing</h1>
-                    <h3>When testing is really, really hard</h3>
-                    <h4>Part 1</h4>
-                    <p>
-                        <small><a href="http://joncairns.com">Jon Cairns</a> / <a href="http://twitter.com/joonty">@joonty</a></small>
-                    </p>
-                </section><section><h2></h2>
-                    <pre>
-                        <code data-trim class="ruby">
-class User &lt; ActiveRecord::Base
-  attr_accessible :name
+fred.join
+
+fred.alive? # =&gt; false
+fred.stop? # =&gt; true
+
+</code></pre>
+          <p class="fragment">You can query a thread variable about it's current status</p>
+        </section><section><h2>Scheduling threads</h2>
+          <pre><code class="ruby">
+x = 5
+
+fred = Thread.new do
+  Thread.stop
+  x ** 5
 end
 
-class UserTest &lt; ActiveRecord::TestCase
-  def test_user_has_a_name
-    user = User.new(name: "Timmy")
+sleep 1
 
-    assert_equal "Timmy", user.name
+fred.stop? # =&gt; true
+
+fred.wakeup
+
+fred.value # =&gt; 3125
+
+</code></pre>
+          <ol>
+<li class="fragment">Threads can access variables from the scope in which they are defined</li>
+            <li class="fragment">Thread.stop will cause a thread to sleep</li>
+            <li class="fragment">Thread#wakeup or Thread#run will start the thread back up again</li>
+            <li class="fragment">The "return" value of a thread can be accessed with Thread#value</li>
+          </ol></section><section><h2>Doing calculatey stuff</h2>
+          <pre><code class="ruby">
+require 'benchmark'
+num_threads = ARGV.shift.to_i
+
+def fib(n)
+  if n &lt; 3
+    1
+  else
+    fib(n-1) + fib(n-2)
   end
 end
 
-</code>
-                    </pre>
+1.upto(num_threads).map { |i|
+  Thread.new { puts fib(34) }
+}.each(&amp;:join)
 
-                </section>
+</code></pre>
+          <table class="fragment">
+<thead><tr>
+<th>No. threads</th>
+                <th>MRI 2.0.0</th>
+                <th>jRuby 1.7.0</th>
+              </tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+                <td>~ 0.60s</td>
+                <td>~ 0.61s</td>
+              </tr>
+<tr>
+<td>4</td>
+                <td>~ 2.47s</td>
+                <td>~ 0.74s</td>
+              </tr>
+</tbody>
+</table></section><section><h2>Another fluffy kitten</h2>
+          <img src="images/fluffy-kitten-2.png"><p class="credit">
+            Image from
+            <a src="http://imgarcade.com/1/fluffy-kittens/">http://imgarcade.com/1/fluffy-kittens/</a>
+          </p>
+        </section><section><h2>Doing IO stuff</h2>
+          <pre><code class="ruby">
+require 'net/http'
+
+num_threads = ARGV.shift.to_i
+
+all_urls = %w(www.ruby-lang.org
+              stackoverflow.com
+              ggapps.co.uk
+              joncairns.com)
+
+url_buckets = all_urls.each_slice(all_urls.length / num_threads).to_a
+
+url_buckets.map { |urls|
+  Thread.new(urls) do |urls|
+    urls.each do |url|
+      Net::HTTP.get(url, "/")
+    end
+  end
+}.each(&amp;:join)
+
+</code></pre>
+          <table class="fragment">
+<thead><tr>
+<th>No. threads</th>
+                <th>MRI 2.0.0</th>
+                <th>jRuby 1.7.0</th>
+              </tr></thead>
+<tbody>
+<tr>
+<td>1</td>
+                <td>~ 4.27s</td>
+                <td>~ 5.76s</td>
+              </tr>
+<tr>
+<td>4</td>
+                <td>~ 2.40s</td>
+                <td>~ 2.95s</td>
+              </tr>
+</tbody>
+</table></section><section><section><h2>A simple kitten counter</h2>
+            <p>We want to test counting some kittens across multiple threads. Let's create a simple counter class.</p>
+            <pre><code class="ruby">
+class KittenCounter
+  attr_reader :total
+
+  def initialize
+    @total = 0
+  end
+
+  def incr
+    @total += 1
+  end
+end
+
+</code></pre>
+          </section><section><h4>A simple kitten counter</h4>
+            <pre><code class="ruby">
+require 'kitten-counter'
+
+total_kittens = ARGV.shift.to_i
+
+kittens = Array.new(total_kittens, :kitten)
+counter = KittenCounter.new
+
+1.upto(4).map {
+  Thread.new {
+    until kittens.empty?
+      kittens.pop
+      counter.incr
+    end
+  }
+}.each(&amp;:join)
+
+puts "Counted #{counter.total} kittens"
+
+</code></pre>
+          </section><section><h4>A simple kitten counter</h4>
+            <p>This seems to work nicely in MRI:</p>
+            <pre><code class="bash">
+$ ruby kitten-counter.rb 1000
+Counted 1000 kittens
+$ ruby kitten-counter.rb 20000
+Counted 20000 kittens
+$ ruby kitten-counter.rb 300000
+Counted 300000 kittens
+
+</code></pre>
+            <div class="fragment">
+              <p>But it all goes a bit weird in jruby:</p>
+              <pre><code class="bash">
+$ jruby kitten-counter.rb 1000
+Counted 839 kittens
+$ jruby kitten-counter.rb 20000
+Counted 10303 kittens
+$ jruby kitten-counter.rb 300000
+Counted 150608 kittens
+
+</code></pre>
+            </div>
+          </section></section><section><h2>Thread safety</h2>
+          <img src="images/hater-kitten.jpg"><p class="credit">
+            Image from
+            <a src="http://imgarcade.com/1/fluffy-kittens/">http://imgarcade.com/1/fluffy-kittens/</a>
+          </p>
+        </section><section><h2>Identifying unsafe operations</h2>
+          <p class="fragment">
+            Anything where you
+            <b>modify</b>
+            global state without locking
+          </p>
+          <p class="fragment">
+            So this must be happening in our simple counter
+          </p>
+        </section><section><h2>A quick recap</h2>
+          <pre><code class="ruby">
+require 'kitten-counter'
+
+total_kittens = ARGV.shift.to_i
+
+kittens = Array.new(total_kittens, :kitten)
+counter = KittenCounter.new
+
+1.upto(4).map {
+  Thread.new {
+    until kittens.empty?
+      kittens.pop
+      counter.incr
+    end
+  }
+}.each(&amp;:join)
+
+puts "Counted #{counter.total} kittens"
+
+</code></pre>
+        </section><section><section><h2>Fixing unsafe thingy #1</h2>
+            <pre><code class="ruby">
+class KittenCounter
+  attr_reader :total
+
+  def initialize
+    @total = 0
+  end
+
+  def incr
+    @total += 1 # HERE
+  end
+end
+
+</code></pre>
+          </section><section><h4>Fixing unsafe thingy #1</h4>
+            <p>A mutex can be used to lock a resource while one thread is reading or writing to it:</p>
+            <pre class="fragment"><code class="ruby">
+require 'thread'
+
+class KittenCounter
+  attr_reader :total
+
+  def initialize
+    @total = 0
+    @mutex = Mutex.new
+  end
+
+  def incr
+    @mutex.synchronize do
+      @total += 1
+    end
+  end
+end
+
+</code></pre>
+          </section><section><h4>Fixing unsafe thingy #1</h4>
+            <p>But we now sometimes count more kittens than we should:</p>
+            <pre class="fragment"><code class="ruby">
+$ jruby kitten-counter.rb 300000
+Counted 303900 kittens
+
+</code></pre>
+          </section></section><section><section><h2>Fixing unsafe thingy #2</h2>
+            <pre><code class="ruby">
+kittens = Array.new(total_kittens, :kitten)
+
+1.upto(4).map {
+  Thread.new {
+    #...
+    kittens.pop # HERE
+    # ...
+  }
+}
+
+</code></pre>
+          </section><section><h4>Fixing unsafe thingy #2</h4>
+            <p>Ruby's Array class is (sometimes) not thread safe.</p>
+            <p class="fragment">Let's use Queue instead.</p>
+            <pre class="fragment"><code class="ruby">
+require 'thread'
+
+kittens = Queue.new
+total_kittens.times do
+  kittens &lt;&lt; :kitten
+end
+
+1.upto(4).map {
+  Thread.new {
+    #...
+    kittens.pop # HERE
+    # ...
+  }
+}
+
+</code></pre>
+          </section></section><section><h2>Queues</h2>
+          <p>Queue can be a replacement for an Array, but there are significant differences:</p>
+          <ol>
+<li class="fragment">Queue is thread safe</li>
+            <li class="fragment">You cannot reference Queue items by index</li>
+            <li class="fragment">Taking an item off a queue will block until an item is added elsewhere (unless you specify it to be non-blocking)</li>
+            <li class="fragment">Queue includes the Enumerable module, but it doesn't include any of Array's methods</li>
+            <li class="fragment">You can also used SizedQueue, if you want to specify the maximum number of items in the queue</li>
+          </ol></section><section><h2>Oh look, a kitten</h2>
+          <img src="images/fluffy-kitten-3.jpg"><p class="credit">
+            Image from
+            <a src="http://imgarcade.com/1/fluffy-kittens/">http://imgarcade.com/1/fluffy-kittens/</a>
+          </p>
+        </section><section><h2>Let's count some kittens</h2>
+          <p>A quick recap of the spec:</p>
+          <ul>
+<li class="fragment">Every kitten should be counted</li>
+            <li class="fragment">The total number of kittens should be produced at the end, along with the totals grouped by colour</li>
+            <li class="fragment">Data for each kitten needs to be stored on the kitten database, which has a web API</li>
+            <li class="fragment">Fred the thread can use any number of his cousins, to speed things up</li>
+          </ul></section><section></section>
 </div>
-
-        </div>
-
-        <script src="../reveal/lib/js/head.min.js"></script><script src="../reveal/js/reveal.min.js"></script><script>
-
-            // Full list of configuration options available here:
-                // https://github.com/hakimel/reveal.js#configuration
-                Reveal.initialize({
-                    controls: true,
-        progress: true,
-        history: true,
-        center: true,
-        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
-        transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
-
-        // Optional libraries used to extend on reveal.js
-        dependencies: [
-            { src: '../reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
-        { src: '../reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-        { src: '../reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-        { src: '../reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-        { src: '../reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
-        { src: '../reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
-        ]
-                });
-
-        </script>
+    </div>
+    <script>
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+          controls: true,
+          progress: true,
+          history: true,
+          center: true,
+          theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+          transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+      
+          // Optional libraries used to extend on reveal.js
+          dependencies: [
+              { src: '../reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+              { src: '../reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: '../reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: '../reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+              { src: '../reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+              { src: '../reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+          ]
+      });
+    </script>
 </body>
 </html>
