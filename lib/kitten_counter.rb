@@ -37,7 +37,7 @@ class KittenCounter
       diff = total - @last_check.last
       now = Time.now.to_i
       t = now - @last_check.first
-      diff.to_f / t
+      (diff.to_f / t).round(2)
     else
       @last_check = [Time.now.to_i, total]
       0

@@ -16,6 +16,7 @@ kittens_in = Queue.new
 
 threads = ThreadManager.new(counter_threads, gateway, counter)
 threads.start(kittens_in)
+counter.kittens_per_second
 
 while line = STDIN.gets
   kittens_in << line
@@ -26,5 +27,6 @@ until kittens_in.empty? && threads.all_inactive?
 end
 
 puts counter.formatted_result
-puts "Thanks, shutting down..."
+
+puts "#{counter.kittens_per_second} kittens per second\n"
 threads.stop
