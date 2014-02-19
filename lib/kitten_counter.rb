@@ -1,9 +1,10 @@
 class KittenCounter
-  attr_reader :totals, :mutex
+  attr_reader :totals, :mutex, :print_freq
 
   def initialize(print_freq = 10)
-    @totals = Hash.new { |h, k| h[k] = 0 }
-    @mutex = Mutex.new
+    @totals     = Hash.new { |h, k| h[k] = 0 }
+    @mutex      = Mutex.new
+    @print_freq = print_freq
   end
 
   def total
@@ -14,6 +15,7 @@ class KittenCounter
     mutex.synchronize do
       @totals[kitten.colour] += 1
     end
+    print_if_necessary
   end
 
   def formatted_result
@@ -28,6 +30,18 @@ class KittenCounter
 *******************************
 
     CAT
+  end
+
+  def kittens_per_second
+    if @last_check
+      diff = total - @last_check.last
+      now = Time.now.to_i
+      t = now - @last_check.first
+      diff.to_f / t
+    else
+      @last_check = [Time.now.to_i, total]
+      0
+    end
   end
 
 protected

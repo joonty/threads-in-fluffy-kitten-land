@@ -32,7 +32,7 @@
             </small>
           </p>
         </section><section><section><h2>This is about writing multithreaded applications in ruby</h2>
-          </section><section><h2>But first, a story</h2>
+            <aside class="notes">It's also interspersed with pictures of kittens. Points will be awarded if you can give me the total number of kittens/cats that appear.</aside></section><section><h2>But first, a story</h2>
             <div class="fragment">
               <img src="images/four-kittens.jpg"><p class="credit">
                 Image from
@@ -159,7 +159,12 @@ end
                 <td>~ 0.74s</td>
               </tr>
 </tbody>
-</table></section><section><h2>Another fluffy kitten</h2>
+</table>
+<aside class="notes">
+            This is calculating fibonacci numbers, and doing so in parallel with n threads. We pass in the number of threads as an argument to the script.
+            Since this is all in the ruby interpreter, we should expect to see no speed improvement by using multiple threads.
+            MRI shows that it takes more than 4 times the amount of time to calculate it in 4 separate threads than in 1, whereas jRuby is demonstrating proper parallelization.
+          </aside></section><section><h2>Another fluffy kitten</h2>
           <img src="images/fluffy-kitten-2.png"><p class="credit">
             Image from
             <a src="http://imgarcade.com/1/fluffy-kittens/">http://imgarcade.com/1/fluffy-kittens/</a>
@@ -278,7 +283,7 @@ Counted 150608 kittens
           <p class="fragment">
             So this must be happening in our simple counter
           </p>
-        </section><section><h2>A quick recap</h2>
+          <aside class="notes">Multiple threads can be reading and writing to the same resource at the same time.</aside></section><section><h2>A quick recap</h2>
           <pre><code class="ruby">
 require 'kitten-counter'
 
@@ -314,7 +319,7 @@ class KittenCounter
 end
 
 </code></pre>
-          </section><section><h4>Fixing unsafe thingy #1</h4>
+            <aside class="notes">This is actually unsafe in MRI too, even though we saw the correct count. If you try it enough times, sometimes it will give you an incorrect value.</aside></section><section><h4>Fixing unsafe thingy #1</h4>
             <p>A mutex can be used to lock a resource while one thread is reading or writing to it:</p>
             <pre class="fragment"><code class="ruby">
 require 'thread'
@@ -335,14 +340,14 @@ class KittenCounter
 end
 
 </code></pre>
-          </section><section><h4>Fixing unsafe thingy #1</h4>
+            <aside class="notes">Only one thread can execute the code inside the Mutex#syncronize block. All other threads wait until the resource has been released.</aside></section><section><h4>Fixing unsafe thingy #1</h4>
             <p>But we now sometimes count more kittens than we should:</p>
             <pre class="fragment"><code class="ruby">
 $ jruby kitten-counter.rb 300000
 Counted 303900 kittens
 
 </code></pre>
-          </section></section><section><section><h2>Fixing unsafe thingy #2</h2>
+            <img src="images/fluffy-kitten-5.jpg" width="5px"></section></section><section><section><h2>Fixing unsafe thingy #2</h2>
             <pre><code class="ruby">
 kittens = Array.new(total_kittens, :kitten)
 
@@ -355,7 +360,7 @@ kittens = Array.new(total_kittens, :kitten)
 }
 
 </code></pre>
-          </section><section><h4>Fixing unsafe thingy #2</h4>
+            <aside class="notes">The pop method is technically thread safe in MRI, due to the GIL. However, calling empty? followed by pop isn't. And it isn't safe at all in jRuby.</aside></section><section><h4>Fixing unsafe thingy #2</h4>
             <p>Ruby's Array class is (sometimes) not thread safe.</p>
             <p class="fragment">Let's use Queue instead.</p>
             <pre class="fragment"><code class="ruby">
@@ -369,7 +374,7 @@ end
 1.upto(4).map {
   Thread.new {
     #...
-    kittens.pop # HERE
+    kittens.pop
     # ...
   }
 }
@@ -418,6 +423,9 @@ end
               <a src="http://iheartcatgifs.tumblr.com/">http://iheartcatgifs.tumblr.com/</a>
             </p>
           </div>
+        </section><section><h2>how many kittens?</h2>
+          <p class="awesome standout fragment">12</p>
+        </section><section><h2>Get ready for live kittens</h2>
         </section>
 </div>
     </div>

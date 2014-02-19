@@ -8,7 +8,7 @@ end
 1.upto(4).map {
   Thread.new {
     #...
-    kittens.pop # HERE
+    kittens.pop
     # ...
   }
 }

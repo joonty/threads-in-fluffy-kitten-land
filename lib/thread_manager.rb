@@ -8,9 +8,9 @@ class ThreadManager
     @threads     = []
   end
 
-  def start(kitten_queue)
+  def start(kitten_queue, debug = true)
     @threads = 1.upto(num_threads).map { |i|
-      Thread.start { thread_exec(i, kitten_queue) }
+      Thread.start { thread_exec(i, kitten_queue, debug) }
     }
   end
 
@@ -23,8 +23,8 @@ class ThreadManager
   end
 
 protected
-  def thread_exec(thread_id, kitten_queue)
-    puts "Started kitten counter #{thread_id}"
+  def thread_exec(thread_id, kitten_queue, debug)
+    puts "Started kitten counter #{thread_id}" if debug
     loop do
       split_kitten = kitten_queue.deq.split(',').map(&:strip)
       kitten = Kitten.new(*split_kitten)

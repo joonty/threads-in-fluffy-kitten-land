@@ -39,37 +39,26 @@
                 <a src="http://www.wallpapersat.com/wallpaper/four-fluffy-kitten.html">http://www.wallpapersat.com/wallpaper/four-fluffy-kitten.html</a>
               </p>
             </div>
-            <aside class="notes">Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).</aside></section><section><h2>Cyril, the hamster king</h2>
+            <aside class="notes">There is a land far-far away, called Fluffy Kitten Land. It's populated, to a large extent, by fluffy kittens. One of it's non-kitten inhabitants is Fred, the thread, who is a public servant. One day, Fred is called into the court of the fluffy kitten king.</aside></section><section><h2>the fluffy kitten king</h2>
             <div class="fragment">
               <img src="images/hamster-king.jpg"><p class="credit">
                 Image from
                 <a src="http://undercoverguineapigs.blogspot.co.uk/2010/12/puppy-guinea-pig-wins-christmas-mouse.html">http://undercoverguineapigs.blogspot.co.uk/2010/12/puppy-guinea-pig-wins-christmas-mouse.html</a>
               </p>
             </div>
-          </section><section><h2>The great fluffy kitten census</h2>
+            <aside class="notes">By a perverse twist of fate, the fluffy kitten king is a hamster called Cyril. He came to Fred the thread with a problem: "Fluffy Kitten land is a happy place, but we have never done a population census. We have no idea how many kittens live here, so I'm giving you the task of counting all the kittens in the land." Fred knew that this was a big task, and that he couldn't possibly do it by himself - it would take too long. Fortunately, he had a number of cousins who could help when the time came.</aside></section><section><h2>The great fluffy kitten census</h2>
             <ul>
 <li class="fragment">Every kitten should be counted</li>
               <li class="fragment">The total number of kittens should be produced at the end, along with the totals grouped by colour</li>
               <li class="fragment">Data for each kitten needs to be stored on the fluffy kitten database, which has a web API</li>
               <li class="fragment">Fred the thread can use any number of his cousins, to speed things up</li>
-            </ul></section></section><section><h2>threads: a definition</h2>
+            </ul>
+<aside class="notes">So that's the background and the spec for our program. To properly utilize Fred's cousins, we need to understand the concept of multithreading, and to understand the practical application in Ruby.</aside></section></section><section><h2>threads: a definition</h2>
           <p class="quote">
             <span class="marks">"</span>
             a thread of execution is the smallest sequence of programmed instructions that can be managed independently by an operating system scheduler
             <span class="marks">"</span>
           </p>
-        </section><section><h2>multithreading and ruby</h2>
-          <ol>
-<li class="fragment">MRI, the most commonly used interpreter, doesn't let the operating system schedule the threads, it manages that itself</li>
-            <li class="fragment">MRI has a global interpreter lock =&gt; only one thread can execute ruby code at any time</li>
-            <li class="fragment">Other interpreters provide true multithreading, e.g. jRuby and Rubinius</li>
-          </ol></section><section><h2>multithreading in MRI</h2>
-          <p>
-            Even though only one thread can execute
-            <span class="standout">ruby</span>
-            at any time, IO operations don't count as being within the interpreter
-          </p>
-          <i class="fragment standout">Apps with considerable IO use can see speed improvement by multithreading</i>
         </section><section><h2>A fluffy kitten</h2>
           <img src="images/fluffy-kitten-1.jpg"><p class="credit">
             Image from
@@ -92,7 +81,11 @@ fred.stop? # =&gt; true
 
 </code></pre>
           <p class="fragment">You can query a thread variable about it's current status</p>
-        </section><section><h2>Scheduling threads</h2>
+          <aside class="notes">
+            Every program runs in at least one thread - the main thread.
+            Threads are defined with Thread.new, and everything inside the block is executed in this thread. When reading the code, imagine that block running at the same time as the proceeding code in the main thread.
+            `join` is used to wait for the thread to finish, so that the program can continue in the main thraed.
+          </aside></section><section><h2>Scheduling threads</h2>
           <pre><code class="ruby">
 x = 5
 
@@ -115,7 +108,22 @@ fred.value # =&gt; 3125
             <li class="fragment">Thread.stop will cause a thread to sleep</li>
             <li class="fragment">Thread#wakeup or Thread#run will start the thread back up again</li>
             <li class="fragment">The "return" value of a thread can be accessed with Thread#value</li>
-          </ol></section><section><h2>Doing calculatey stuff</h2>
+          </ol>
+<aside class="notes">
+            The sleep has been added in the main thread to give the new thread time to start up.
+          </aside></section><section><h2>ruby's multithreading idiosyncrasies</h2>
+          <ol>
+<li class="fragment">MRI, the most commonly used interpreter, doesn't let the operating system schedule the threads, it manages that itself</li>
+            <li class="fragment">MRI has a global interpreter lock =&gt; only one thread can execute ruby code at any time</li>
+            <li class="fragment">Other interpreters provide true multithreading, e.g. jRuby and Rubinius</li>
+          </ol></section><section><h2>multithreading in MRI</h2>
+          <p>
+            Even though only one thread can execute
+            <span class="standout">ruby</span>
+            at any time, IO operations don't count as being within the interpreter
+          </p>
+          <i class="fragment standout">Apps with considerable IO use can see speed improvement by multithreading</i>
+        </section><section><h2>Doing calculatey stuff</h2>
           <pre><code class="ruby">
 require 'benchmark'
 num_threads = ARGV.shift.to_i
@@ -387,7 +395,30 @@ end
             <li class="fragment">The total number of kittens should be produced at the end, along with the totals grouped by colour</li>
             <li class="fragment">Data for each kitten needs to be stored on the kitten database, which has a web API</li>
             <li class="fragment">Fred the thread can use any number of his cousins, to speed things up</li>
-          </ul></section><section></section>
+          </ul></section><section><h2>To conclude</h2>
+          <p style="text-transform: uppercase">Their weakness is their nose</p>
+          <div class="fragment">
+            <img src="images/gif-1.gif"><p class="credit">
+              Source:
+              <a src="http://iheartcatgifs.tumblr.com/">http://iheartcatgifs.tumblr.com/</a>
+            </p>
+          </div>
+        </section><section><h2>In summary</h2>
+          <p>They like to drink alone</p>
+          <div class="fragment">
+            <img src="images/gif-2.gif"><p class="credit">
+              Source:
+              <a src="http://iheartcatgifs.tumblr.com/">http://iheartcatgifs.tumblr.com/</a>
+            </p>
+          </div>
+        </section><section><h2>And finally</h2>
+          <div class="fragment">
+            <img src="images/gif-3.gif"><p class="credit">
+              Source:
+              <a src="http://iheartcatgifs.tumblr.com/">http://iheartcatgifs.tumblr.com/</a>
+            </p>
+          </div>
+        </section>
 </div>
     </div>
     <script>
