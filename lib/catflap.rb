@@ -1,4 +1,4 @@
-class KittenGateway
+class Catflap
   attr_reader :endpoint
 
   def initialize(endpoint)
