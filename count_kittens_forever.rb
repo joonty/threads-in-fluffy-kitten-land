@@ -4,12 +4,12 @@ require 'thread'
 $: << "lib"
 require 'kitten'
 require 'kitten_counter'
-require 'kitten_gateway'
+require 'catflap'
 require 'thread_manager'
 
 Thread.abort_on_exception = true
 
-gateway = KittenGateway.new(URI("http://localhost:4567/register_kitten"))
+gateway = Catflap.new(URI("http://localhost:4567/register_kitten"))
 counter = KittenCounter.new(0)
 counter_threads = ARGV.first.to_i > 0 ? ARGV.first.to_i : 4
 kittens_in = Queue.new
